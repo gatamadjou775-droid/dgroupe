@@ -1,0 +1,92 @@
+========================================================
+ GESTIONPRÉSENCE — VERSION RÉSEAU LOCAL
+========================================================
+
+Ce dossier contient un petit serveur qui permet à toutes vos
+tablettes, téléphones et ordinateurs de partager LA MÊME base
+de données de pointage, en temps réel, sur votre réseau Wi-Fi
+d'entreprise. Aucune connexion internet n'est nécessaire.
+
+--------------------------------------------------------
+1) INSTALLATION (une seule fois)
+--------------------------------------------------------
+Sur l'ordinateur qui servira de "serveur" (un PC de bureau ou
+un ordinateur qui reste allumé pendant les heures de travail) :
+
+  a) Installez Node.js (gratuit) : https://nodejs.org
+     (choisissez la version "LTS", suivant/suivant/terminer)
+
+  b) Copiez ce dossier "GestionPresence_Reseau" entier sur cet
+     ordinateur (bureau, disque D:, peu importe).
+
+C'est tout. Pas d'autre installation nécessaire.
+
+--------------------------------------------------------
+2) DÉMARRER LE SERVEUR (chaque jour)
+--------------------------------------------------------
+  - Windows  : double-cliquez sur "demarrer.bat"
+  - Mac/Linux: double-cliquez sur "demarrer.sh"
+               (ou ouvrez un Terminal dans le dossier et tapez :
+                ./demarrer.sh)
+
+Une fenêtre noire s'ouvre et affiche une adresse du type :
+
+    ➜  http://192.168.1.25:3000
+
+NOTEZ CETTE ADRESSE (elle peut changer si vous redémarrez votre
+box internet). Laissez cette fenêtre ouverte toute la journée :
+c'est elle qui fait fonctionner le logiciel pour tout le monde.
+Vous pouvez la réduire, mais ne la fermez pas.
+
+--------------------------------------------------------
+3) CONNECTER LES AUTRES APPAREILS
+--------------------------------------------------------
+Sur CHAQUE tablette, téléphone ou PC (RH) :
+
+  1. Connectez l'appareil au MÊME Wi-Fi que le serveur.
+  2. Ouvrez un navigateur (Chrome, Safari, Edge...).
+  3. Tapez l'adresse notée à l'étape 2, par exemple :
+        http://192.168.1.25:3000
+  4. Une page d'accueil propose deux boutons :
+        📲 Pointage   → à utiliser sur la tablette d'entrée
+        🗂️ Espace RH  → à utiliser par le service RH (code PIN)
+
+Astuce : sur la tablette de pointage, vous pouvez ensuite
+"ajouter à l'écran d'accueil" (menu du navigateur) pour avoir
+une icône comme une vraie application, en allant directement
+sur : http://192.168.1.25:3000/pointage.html
+
+--------------------------------------------------------
+4) CODE PIN PAR DÉFAUT
+--------------------------------------------------------
+Code PIN de l'espace RH : 1234
+→ À changer immédiatement dans Employés > "Modifier le code PIN"
+
+--------------------------------------------------------
+5) SAUVEGARDES
+--------------------------------------------------------
+Toutes les données sont stockées dans le fichier :
+    data.json
+Une copie de sécurité est créée automatiquement chaque jour
+dans le dossier "sauvegardes/". Vous pouvez aussi copier
+manuellement "data.json" sur une clé USB de temps en temps.
+
+--------------------------------------------------------
+6) QUESTIONS FRÉQUENTES
+--------------------------------------------------------
+Q: "Serveur injoignable" s'affiche sur une tablette ?
+R: Vérifiez qu'elle est bien sur le même Wi-Fi que le serveur,
+   et que la fenêtre noire du serveur est toujours ouverte.
+
+Q: L'adresse a changé depuis hier ?
+R: Cela arrive si la box redémarre. Relancez le serveur et
+   notez la nouvelle adresse affichée.
+
+Q: Peut-on utiliser ça sans Wi-Fi, juste avec des câbles ?
+R: Oui, tant que tous les appareils sont sur le même réseau
+   (Wi-Fi ou Ethernet), cela fonctionne.
+
+Q: Combien d'appareils peuvent se connecter en même temps ?
+R: Autant que nécessaire (plusieurs tablettes de pointage,
+   plusieurs postes RH) — toutes partagent les mêmes données,
+   mises à jour automatiquement toutes les quelques secondes.

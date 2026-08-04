@@ -1,0 +1,13 @@
+{
+  "name": "gestion-presence",
+  "version": "1.0.0",
+  "private": true,
+  "description": "GestionPresence - suivi de pointage et presence",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

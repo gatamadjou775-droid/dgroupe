@@ -1,0 +1,566 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>Pointage — GestionPrésence</title>
+<style>
+:root{
+  --B1:#0a1f44;--B2:#1a3a6e;--B3:#1e4d96;--B4:#2d6bc4;--B5:#e8f0fc;
+  --O1:#e65100;--O2:#f57c00;--O3:#ff9800;--O4:#fff3e0;
+  --GRN:#1a7a4c;--GRNP:#e6f5ee;--RED:#c0392b;--REDP:#fdecea;
+  --G1:#f5f7fb;--G2:#eaecf2;--G4:#8691aa;--G5:#3d4a65;--W:#fff;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--B1);color:var(--W);overflow:hidden;}
+
+/* SCREENS */
+.screen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:24px;background:linear-gradient(160deg,var(--B1) 0%,var(--B2) 60%,var(--B3) 100%);}
+.screen.on{display:flex;}
+
+/* CLOCK SCREEN */
+.clock-wrap{text-align:center;width:100%;}
+.clock-date{font-size:16px;color:rgba(255,255,255,.5);letter-spacing:1px;text-transform:uppercase;margin-bottom:8px;}
+.clock-time{font-size:72px;font-weight:800;color:#fff;letter-spacing:-2px;line-height:1;font-variant-numeric:tabular-nums;}
+.clock-sub{font-size:14px;color:rgba(255,255,255,.4);margin-top:6px;}
+.start-btn{margin-top:40px;width:100%;max-width:340px;padding:20px;border-radius:16px;background:var(--O2);color:#fff;font-size:20px;font-weight:700;border:none;cursor:pointer;box-shadow:0 8px 30px rgba(245,124,0,.35);letter-spacing:.3px;}
+.start-btn:active{transform:scale(.97);}
+
+/* SELECT SCREEN */
+.sel-screen-inner{width:100%;max-width:420px;}
+.sel-title{font-size:22px;font-weight:800;text-align:center;margin-bottom:6px;}
+.sel-sub{font-size:14px;color:rgba(255,255,255,.5);text-align:center;margin-bottom:24px;}
+.srch-box{position:relative;margin-bottom:12px;}
+.srch-box input{width:100%;padding:16px 16px 16px 46px;border-radius:14px;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.1);color:#fff;font-size:17px;outline:none;-webkit-appearance:none;}
+.srch-box input::placeholder{color:rgba(255,255,255,.35);}
+.srch-box input:focus{border-color:var(--O2);background:rgba(255,255,255,.15);}
+.srch-ico{position:absolute;left:14px;top:50%;transform:translateY(-50%);font-size:18px;opacity:.5;}
+.emp-list{max-height:50vh;overflow-y:auto;border-radius:14px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);}
+.emp-item{padding:15px 18px;display:flex;align-items:center;gap:12px;cursor:pointer;border-bottom:1px solid rgba(255,255,255,.07);transition:background .15s;}
+.emp-item:last-child{border-bottom:none;}
+.emp-item:active{background:rgba(255,255,255,.15);}
+.emp-av{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:14px;flex-shrink:0;}
+.emp-name{font-size:15px;font-weight:500;}
+.back-btn{margin-top:16px;width:100%;padding:14px;border-radius:12px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.7);font-size:15px;font-weight:500;border:1px solid rgba(255,255,255,.15);cursor:pointer;}
+
+/* PHOTO SCREEN */
+.photo-inner{width:100%;max-width:420px;text-align:center;}
+.emp-confirm{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.1);border-radius:14px;padding:14px 18px;margin-bottom:20px;text-align:left;}
+.emp-confirm .av{width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;flex-shrink:0;}
+.emp-confirm-name{font-size:18px;font-weight:700;}
+.emp-confirm-time{font-size:13px;color:rgba(255,255,255,.5);margin-top:2px;}
+.camera-wrap{position:relative;width:100%;max-width:320px;margin:0 auto 20px;}
+.camera-frame{width:100%;aspect-ratio:3/4;border-radius:20px;overflow:hidden;background:#000;border:3px solid var(--O2);position:relative;}
+.camera-frame video{width:100%;height:100%;object-fit:cover;}
+.camera-frame canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:none;}
+.camera-frame .cam-overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.5);}
+.cam-guide{position:absolute;top:50%;left:50%;transform:translate(-50%,-55%);width:60%;aspect-ratio:3/4;border:2px solid rgba(255,255,255,.4);border-radius:50%;pointer-events:none;}
+.photo-btn{width:70px;height:70px;border-radius:50%;background:var(--O2);border:4px solid #fff;cursor:pointer;margin:0 auto;display:flex;align-items:center;justify-content:center;font-size:28px;box-shadow:0 4px 20px rgba(245,124,0,.4);}
+.photo-btn:active{transform:scale(.93);}
+.retake-btn{margin-top:12px;padding:12px 24px;border-radius:10px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:14px;cursor:pointer;}
+.confirm-btn{width:100%;padding:18px;border-radius:14px;background:var(--GRN);color:#fff;font-size:18px;font-weight:700;border:none;cursor:pointer;margin-top:12px;box-shadow:0 6px 20px rgba(26,122,76,.35);}
+.confirm-btn:active{transform:scale(.97);}
+.photo-hint{font-size:13px;color:rgba(255,255,255,.45);margin-bottom:12px;}
+
+/* SUCCESS SCREEN */
+.success-inner{text-align:center;width:100%;max-width:380px;}
+.success-ico{font-size:80px;margin-bottom:16px;animation:pop .4s ease;}
+@keyframes pop{0%{transform:scale(0.5);opacity:0;}80%{transform:scale(1.1);}100%{transform:scale(1);opacity:1;}}
+.success-name{font-size:26px;font-weight:800;margin-bottom:8px;}
+.success-time{font-size:18px;color:rgba(255,255,255,.6);margin-bottom:6px;}
+.success-badge{display:inline-block;padding:8px 20px;border-radius:999px;font-size:15px;font-weight:700;margin-bottom:28px;}
+.badge-ok{background:var(--GRNP);color:var(--GRN);}
+.badge-late{background:var(--O4);color:var(--O1);}
+.photo-preview{width:100px;height:100px;border-radius:50%;object-fit:cover;border:3px solid var(--O2);margin:0 auto 20px;display:block;}
+.done-btn{width:100%;padding:18px;border-radius:14px;background:rgba(255,255,255,.12);color:#fff;border:1px solid rgba(255,255,255,.2);font-size:16px;font-weight:600;cursor:pointer;}
+
+/* TOAST */
+.toast{position:fixed;top:20px;left:16px;right:16px;padding:14px 18px;border-radius:12px;font-size:15px;font-weight:600;z-index:999;text-align:center;transform:translateY(-80px);opacity:0;transition:all .3s;pointer-events:none;}
+.toast.show{transform:translateY(0);opacity:1;}
+.toast.ok{background:var(--GRN);color:#fff;}
+.toast.ko{background:var(--RED);color:#fff;}
+
+/* ADMIN LINK */
+.admin-link{position:fixed;bottom:16px;right:16px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.4);padding:8px 14px;border-radius:20px;font-size:11px;cursor:pointer;z-index:50;}
+</style>
+</head>
+<body>
+
+<!-- ÉCRAN 1 : HORLOGE + DÉMARRER -->
+<div class="screen on" id="s-clock">
+  <div class="clock-wrap">
+    <div class="clock-date" id="clk-date"></div>
+    <div class="clock-time" id="clk-time">00:00:00</div>
+    <div class="clock-sub">Heure officielle — non modifiable</div>
+    <div style="display:flex;gap:10px;width:100%;max-width:340px;margin-top:40px;">
+      <button class="start-btn" style="margin-top:0;flex:1;padding:18px 8px;font-size:16px;" onclick="goSelect('arrivee')">👆 Arrivée</button>
+      <button class="start-btn" style="margin-top:0;flex:1;padding:18px 8px;font-size:16px;background:var(--B4);box-shadow:0 8px 30px rgba(45,107,196,.35);" onclick="goSelect('depart')">🚪 Départ</button>
+    </div>
+    <button class="back-btn" style="margin-top:14px;width:100%;max-width:340px;background:rgba(255,255,255,.08);" onclick="goSelect('justif')">📝 Justifier un retard / départ</button>
+  </div>
+</div>
+
+<!-- ÉCRAN 2 : CHOISIR EMPLOYÉ -->
+<div class="screen" id="s-select">
+  <div class="sel-screen-inner">
+    <div class="sel-title" id="sel-title">Qui êtes-vous ?</div>
+    <div class="sel-sub" id="sel-sub">Sélectionnez votre nom dans la liste</div>
+    <div class="srch-box">
+      <span class="srch-ico">🔍</span>
+      <input type="text" id="emp-search" placeholder="Rechercher votre nom..." oninput="filterEmps()" autocomplete="off" autocorrect="off" spellcheck="false">
+    </div>
+    <div class="emp-list" id="emp-list"></div>
+    <button class="back-btn" onclick="goScreen('s-clock')">← Retour</button>
+  </div>
+</div>
+
+<!-- ÉCRAN 3 : PHOTO -->
+<div class="screen" id="s-photo">
+  <div class="photo-inner">
+    <div class="emp-confirm" id="emp-confirm-box">
+      <div class="av" id="confirm-av"></div>
+      <div>
+        <div class="emp-confirm-name" id="confirm-name"></div>
+        <div class="emp-confirm-time" id="confirm-time"></div>
+      </div>
+    </div>
+    <div class="photo-hint">Placez votre visage dans le cadre et prenez votre photo</div>
+    <div id="depart-motif-box" style="display:none;text-align:left;margin-bottom:14px;">
+      <div class="photo-hint" style="margin-bottom:6px;">Si vous partez avant l'heure prévue, précisez le motif (sinon ce sera comptabilisé en départ anticipé non justifié) :</div>
+      <textarea id="depart-motif" rows="2" placeholder="Motif du départ anticipé (optionnel)..." style="width:100%;padding:12px;border-radius:12px;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.1);color:#fff;font-size:14px;outline:none;resize:none;font-family:inherit;"></textarea>
+    </div>
+    <div class="camera-wrap">
+      <div class="camera-frame" id="cam-frame">
+        <video id="cam-video" autoplay playsinline muted></video>
+        <canvas id="cam-canvas"></canvas>
+        <div class="cam-guide"></div>
+        <div class="camera-frame .cam-overlay" id="cam-loading" style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,.7);border-radius:17px;">
+          <div style="text-align:center;"><div style="font-size:32px;margin-bottom:8px;">📷</div><div style="font-size:14px;color:rgba(255,255,255,.7);">Activation caméra...</div></div>
+        </div>
+      </div>
+    </div>
+    <div id="photo-controls">
+      <div style="display:flex;justify-content:center;margin-bottom:12px;">
+        <div class="photo-btn" onclick="takePhoto()">📸</div>
+      </div>
+      <button class="back-btn" onclick="stopCamera();goScreen('s-select')">← Changer de nom</button>
+    </div>
+    <div id="retake-controls" style="display:none;">
+      <button class="confirm-btn" onclick="confirmPointage()">✅ Confirmer mon pointage</button>
+      <button class="retake-btn" onclick="retakePhoto()">🔄 Reprendre la photo</button>
+      <button class="back-btn" style="margin-top:8px;" onclick="stopCamera();goScreen('s-select')">← Changer de nom</button>
+    </div>
+  </div>
+</div>
+
+<!-- ÉCRAN 4 : SUCCÈS -->
+<div class="screen" id="s-success">
+  <div class="success-inner">
+    <div class="success-ico" id="suc-ico">✅</div>
+    <img id="suc-photo" class="photo-preview" src="" alt="" style="display:none;">
+    <div class="success-name" id="suc-name"></div>
+    <div class="success-time" id="suc-time"></div>
+    <div class="success-badge" id="suc-badge"></div>
+    <button class="done-btn" onclick="resetAll()">← Terminer (prochain employé)</button>
+  </div>
+</div>
+
+<!-- ÉCRAN 5 : LISTE DES ÉLÉMENTS À JUSTIFIER -->
+<div class="screen" id="s-justif-list">
+  <div class="sel-screen-inner">
+    <div class="sel-title">📝 Mes retards / départs</div>
+    <div class="sel-sub" id="justif-emp-name"></div>
+    <div class="emp-list" id="justif-list" style="max-height:56vh;"></div>
+    <button class="back-btn" onclick="goScreen('s-select')">← Changer de nom</button>
+    <button class="back-btn" style="margin-top:8px;" onclick="goScreen('s-clock')">← Retour à l'accueil</button>
+  </div>
+</div>
+
+<!-- ÉCRAN 6 : FORMULAIRE DE JUSTIFICATION -->
+<div class="screen" id="s-justif-form">
+  <div class="photo-inner">
+    <div class="emp-confirm" id="justif-confirm-box">
+      <div class="av" id="justif-av"></div>
+      <div>
+        <div class="emp-confirm-name" id="justif-record-title"></div>
+        <div class="emp-confirm-time" id="justif-record-sub"></div>
+      </div>
+    </div>
+    <div class="photo-hint" style="text-align:left;margin-bottom:8px;">Motif / justification</div>
+    <textarea id="justif-motif" rows="4" placeholder="Ex : embouteillage, panne de transport, urgence familiale..." style="width:100%;padding:14px;border-radius:14px;border:2px solid rgba(255,255,255,.15);background:rgba(255,255,255,.1);color:#fff;font-size:16px;outline:none;resize:none;margin-bottom:16px;font-family:inherit;"></textarea>
+    <button class="confirm-btn" onclick="submitJustif()">✅ Envoyer la justification</button>
+    <button class="back-btn" style="margin-top:8px;" onclick="goScreen('s-justif-list')">← Retour à la liste</button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+<div class="admin-link" onclick="goAdmin()">⚙ Admin</div>
+
+<script>
+// ===== SHARED STORAGE KEY (même que l'app RH) =====
+const KEY = 'presrh_m1';
+const MOIS = ['Dimanche','Lundi','Mardi','Mercredi','Jeudi','Vendredi','Samedi'];
+const MOIS_FR = ['janvier','février','mars','avril','mai','juin','juillet','août','septembre','octobre','novembre','décembre'];
+const AVC = ['#1a3a6e','#1e4d96','#2d6bc4','#f57c00','#e65100','#1a7a4c','#c0392b','#7b1fa2','#00838f','#558b2f'];
+
+let DB = {employes:[],retards:[],absences:[],lid:0};
+let selectedEmp = null;
+let capturedPhoto = null;
+let arrivalTime = null;
+let stream = null;
+let pointMode = 'arrivee'; // 'arrivee' | 'depart' | 'justif'
+let justifRecord = null;
+
+// ===== LOAD DB (via serveur réseau local) =====
+async function loadDB(){
+  try{
+    const res=await fetch('/api/data');
+    if(res.ok)DB=await res.json();
+  }catch(e){
+    console.error('Connexion au serveur impossible',e);
+    setTimeout(()=>toast('⚠️ Serveur local injoignable — vérifiez le Wi-Fi et que le serveur est démarré','ko'),400);
+  }
+  if(!DB.employes)DB.employes=[];
+  if(!DB.retards)DB.retards=[];
+  if(!DB.absences)DB.absences=[];
+  if(!DB.lid)DB.lid=0;
+  if(!DB.settings)DB.settings={pin:'1234'};
+}
+async function refreshDB(){
+  try{
+    const res=await fetch('/api/data');
+    if(res.ok)DB=await res.json();
+  }catch(e){
+    toast('⚠️ Connexion au serveur perdue','ko');
+  }
+}
+function saveDB(){
+  fetch('/api/data',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(DB)})
+    .catch(e=>toast('⚠️ Sauvegarde impossible — vérifiez le réseau','ko'));
+}
+function nid(){DB.lid++;return 'I'+DB.lid;}
+
+// ===== UTILS =====
+function ini(n){return n.split(' ').slice(0,2).map(w=>w[0]||'').join('').toUpperCase();}
+function avc(n){let h=0;for(let c of n)h=(h*31+c.charCodeAt(0))%AVC.length;return AVC[h];}
+function fmt(mn){if(!mn)return '—';const h=Math.floor(mn/60),m=mn%60;if(h&&m)return h+'h '+m+'m';return h?h+'h':m+'m';}
+function today(){return new Date().toISOString().split('T')[0];}
+function toast(msg,type='ok'){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.className='toast show '+type;
+  setTimeout(()=>t.className='toast',3500);
+}
+
+// ===== CLOCK =====
+function updateClock(){
+  const now=new Date();
+  const h=String(now.getHours()).padStart(2,'0');
+  const m=String(now.getMinutes()).padStart(2,'0');
+  const s=String(now.getSeconds()).padStart(2,'0');
+  document.getElementById('clk-time').textContent=h+':'+m+':'+s;
+  const j=MOIS[now.getDay()];
+  const d=now.getDate();
+  const mo=MOIS_FR[now.getMonth()];
+  const yr=now.getFullYear();
+  document.getElementById('clk-date').textContent=`${j} ${d} ${mo} ${yr}`;
+}
+setInterval(updateClock,1000);
+updateClock();
+
+// ===== SCREENS =====
+function goScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+}
+
+// ===== SELECT EMP =====
+async function goSelect(mode){
+  if(mode)pointMode=mode;
+  const titles={
+    arrivee:['Qui êtes-vous ?','Sélectionnez votre nom pour pointer votre arrivée'],
+    depart:['Qui êtes-vous ?','Sélectionnez votre nom pour pointer votre départ'],
+    justif:['Qui êtes-vous ?','Sélectionnez votre nom pour justifier un retard ou départ']
+  };
+  const t=titles[pointMode]||titles.arrivee;
+  document.getElementById('sel-title').textContent=t[0];
+  document.getElementById('sel-sub').textContent=t[1];
+  document.getElementById('emp-search').value='';
+  goScreen('s-select');
+  document.getElementById('emp-list').innerHTML='<div style="padding:30px;text-align:center;color:rgba(255,255,255,.5);font-size:14px;">Chargement…</div>';
+  await refreshDB();
+  renderEmpList(DB.employes.filter(e=>e.statut==='Actif').sort((a,b)=>a.nom.localeCompare(b.nom)));
+  setTimeout(()=>document.getElementById('emp-search').focus(),300);
+}
+
+function filterEmps(){
+  const q=document.getElementById('emp-search').value.toLowerCase();
+  const list=DB.employes.filter(e=>e.statut==='Actif'&&(!q||e.nom.toLowerCase().includes(q))).sort((a,b)=>a.nom.localeCompare(b.nom));
+  renderEmpList(list);
+}
+
+function renderEmpList(list){
+  const el=document.getElementById('emp-list');
+  if(!list.length){el.innerHTML='<div style="padding:20px;text-align:center;color:rgba(255,255,255,.4);font-size:14px;">Aucun employé trouvé</div>';return;}
+  el.innerHTML=list.map(e=>{
+    const c=avc(e.nom);
+    return `<div class="emp-item" onclick="selectEmp('${e.id}')">
+      <div class="emp-av" style="background:${c}33;color:${c};">${ini(e.nom)}</div>
+      <div class="emp-name">${e.nom}</div>
+    </div>`;
+  }).join('');
+}
+
+// ===== PHOTO SCREEN =====
+function selectEmp(id){
+  selectedEmp=DB.employes.find(e=>e.id===id);
+  if(!selectedEmp)return;
+
+  if(pointMode==='justif'){
+    goJustifList();
+    return;
+  }
+
+  // Capture heure MAINTENANT — non modifiable
+  arrivalTime=new Date();
+  const h=String(arrivalTime.getHours()).padStart(2,'0');
+  const m=String(arrivalTime.getMinutes()).padStart(2,'0');
+  const timeStr=h+':'+m;
+  // Afficher confirmation
+  const c=avc(selectedEmp.nom);
+  document.getElementById('confirm-av').style.cssText=`background:${c}33;color:${c};width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;`;
+  document.getElementById('confirm-av').textContent=ini(selectedEmp.nom);
+  document.getElementById('confirm-name').textContent=selectedEmp.nom;
+  document.getElementById('confirm-time').textContent=(pointMode==='depart'?'Départ enregistré à ':'Arrivée enregistrée à ')+timeStr+' (heure système)';
+  goScreen('s-photo');
+  capturedPhoto=null;
+  document.getElementById('photo-controls').style.display='block';
+  document.getElementById('retake-controls').style.display='none';
+  document.getElementById('depart-motif-box').style.display=(pointMode==='depart')?'block':'none';
+  document.getElementById('depart-motif').value='';
+  startCamera();
+}
+
+// ===== CAMERA =====
+async function startCamera(){
+  try{
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480}},audio:false});
+    const video=document.getElementById('cam-video');
+    video.srcObject=stream;
+    video.onloadedmetadata=()=>{
+      document.getElementById('cam-loading').style.display='none';
+      document.getElementById('cam-canvas').style.display='none';
+      video.style.display='block';
+    };
+  }catch(e){
+    document.getElementById('cam-loading').innerHTML='<div style="text-align:center;padding:20px;"><div style="font-size:32px;margin-bottom:8px;">⚠️</div><div style="font-size:13px;color:rgba(255,255,255,.6);">Caméra non disponible.<br>Pointage sans photo.</div></div>';
+    // Permettre quand même le pointage sans photo
+    document.getElementById('photo-controls').innerHTML=`<button class="confirm-btn" onclick="confirmPointageNoPhoto()" style="background:var(--O2);">✅ Pointer sans photo</button><button class="back-btn" onclick="goScreen('s-select')" style="margin-top:8px;">← Changer de nom</button>`;
+  }
+}
+
+function stopCamera(){
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  const video=document.getElementById('cam-video');
+  video.srcObject=null;
+  document.getElementById('cam-loading').style.display='flex';
+  document.getElementById('cam-canvas').style.display='none';
+  video.style.display='block';
+}
+
+function takePhoto(){
+  const video=document.getElementById('cam-video');
+  const canvas=document.getElementById('cam-canvas');
+  canvas.width=video.videoWidth||320;
+  canvas.height=video.videoHeight||240;
+  const ctx=canvas.getContext('2d');
+  // Miroir horizontal (selfie naturelle)
+  ctx.translate(canvas.width,0);ctx.scale(-1,1);
+  ctx.drawImage(video,0,0);
+  capturedPhoto=canvas.toDataURL('image/jpeg',0.7);
+  video.style.display='none';
+  canvas.style.display='block';
+  document.getElementById('photo-controls').style.display='none';
+  document.getElementById('retake-controls').style.display='block';
+}
+
+function retakePhoto(){
+  const video=document.getElementById('cam-video');
+  const canvas=document.getElementById('cam-canvas');
+  video.style.display='block';
+  canvas.style.display='none';
+  capturedPhoto=null;
+  document.getElementById('photo-controls').style.display='block';
+  document.getElementById('retake-controls').style.display='none';
+}
+
+// ===== CONFIRMER POINTAGE =====
+function confirmPointage(){
+  if(!selectedEmp||!arrivalTime)return;
+  enregistrer(capturedPhoto);
+}
+
+function confirmPointageNoPhoto(){
+  if(!selectedEmp||!arrivalTime)return;
+  enregistrer(null);
+}
+
+function enregistrer(photo){
+  const now=arrivalTime; // heure capturée à la sélection
+  const h=String(now.getHours()).padStart(2,'0');
+  const m=String(now.getMinutes()).padStart(2,'0');
+  const timeStr=h+':'+m;
+  const dateStr=today();
+  const isDepart=(pointMode==='depart');
+
+  // Vérifier si déjà pointé aujourd'hui pour ce type
+  const dejaPonte=DB.retards.find(r=>r.empId===selectedEmp.id&&r.date===dateStr&&(r.type||'arrivee')===pointMode);
+  if(dejaPonte){
+    toast('⚠️ Vous avez déjà pointé votre '+(isDepart?'départ':'arrivée')+' aujourd\'hui à '+dejaPonte.harr,'ko');
+    setTimeout(()=>resetAll(),3000);
+    return;
+  }
+
+  let hRef, diffMn, estAnomalie, motif;
+
+  if(isDepart){
+    // Départ : anomalie = partir AVANT l'heure de référence
+    hRef=selectedEmp.hdep||'17:30';
+    const [rh,rm]=hRef.split(':').map(Number);
+    diffMn=(rh*60+rm)-(now.getHours()*60+now.getMinutes()); // >0 = parti tôt
+    estAnomalie=diffMn>0;
+    motif=(document.getElementById('depart-motif').value||'').trim();
+  } else {
+    // Arrivée : anomalie = arriver APRÈS l'heure de référence
+    hRef=selectedEmp.href||'08:00';
+    const [rh,rm]=hRef.split(':').map(Number);
+    diffMn=(now.getHours()*60+now.getMinutes())-(rh*60+rm); // >0 = en retard
+    estAnomalie=diffMn>0;
+    motif='';
+  }
+  const totalMn=estAnomalie?diffMn:0;
+  const justifie=(!estAnomalie)?'Oui':(motif?'Oui':'Non');
+
+  // Enregistrer
+  DB.retards.push({
+    id:nid(),
+    empId:selectedEmp.id,
+    empNom:selectedEmp.nom,
+    date:dateStr,
+    type:pointMode,
+    hprev:hRef,
+    harr:timeStr,
+    rh:Math.floor(totalMn/60),
+    rm:totalMn%60,
+    totalMn,
+    motif,
+    justifie,
+    photo:photo||null,
+    ts:Date.now(),
+    source:'tablette'
+  });
+  saveDB();
+  stopCamera();
+
+  // Afficher succès
+  document.getElementById('suc-name').textContent=selectedEmp.nom;
+  document.getElementById('suc-time').textContent=(isDepart?'Départ : ':'Arrivée : ')+timeStr+' • H. prévue : '+hRef;
+  const badge=document.getElementById('suc-badge');
+  const ico=document.getElementById('suc-ico');
+  if(estAnomalie){
+    badge.className='success-badge badge-late';
+    badge.textContent=(isDepart?'🚪 Départ anticipé : ':'⏱ Retard : ')+fmt(totalMn)+(justifie==='Oui'?' (justifié)':' — à justifier');
+    ico.textContent='⚠️';
+  } else {
+    badge.className='success-badge badge-ok';
+    badge.textContent=isDepart?'✅ Départ à l\'heure ou après':'✅ À l\'heure';
+    ico.textContent='✅';
+  }
+  // Photo preview
+  const ph=document.getElementById('suc-photo');
+  if(photo){ph.src=photo;ph.style.display='block';}
+  else{ph.style.display='none';}
+
+  goScreen('s-success');
+}
+
+// ===== RESET =====
+function resetAll(){
+  selectedEmp=null;capturedPhoto=null;arrivalTime=null;justifRecord=null;
+  pointMode='arrivee';
+  stopCamera();
+  // Reset photo screen
+  document.getElementById('photo-controls').style.display='block';
+  document.getElementById('retake-controls').style.display='none';
+  document.getElementById('cam-loading').style.display='flex';
+  document.getElementById('depart-motif-box').style.display='none';
+  goScreen('s-clock');
+}
+
+// ===== JUSTIFICATION D'UN RETARD / DÉPART =====
+function goJustifList(){
+  document.getElementById('justif-emp-name').textContent=selectedEmp.nom;
+  // Éléments non justifiés (retard arrivée ou départ anticipé), 30 derniers jours, plus récents d'abord
+  const limitDate=new Date();limitDate.setDate(limitDate.getDate()-30);
+  const limitStr=limitDate.toISOString().split('T')[0];
+  const items=DB.retards.filter(r=>r.empId===selectedEmp.id&&r.totalMn>0&&r.justifie!=='Oui'&&r.date>=limitStr)
+    .sort((a,b)=>b.date.localeCompare(a.date));
+  const el=document.getElementById('justif-list');
+  if(!items.length){
+    el.innerHTML='<div style="padding:24px;text-align:center;color:rgba(255,255,255,.5);font-size:14px;">✅ Rien à justifier pour le moment</div>';
+  } else {
+    el.innerHTML=items.map(r=>{
+      const isDepart=r.type==='depart';
+      return `<div class="emp-item" onclick="openJustifForm('${r.id}')">
+        <div class="emp-av" style="background:${isDepart?'#2d6bc433':'#f57c0033'};color:${isDepart?'#2d6bc4':'#f57c00'};">${isDepart?'🚪':'⏱'}</div>
+        <div>
+          <div class="emp-name">${isDepart?'Départ anticipé':'Retard'} — ${fmt(r.totalMn)}</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:2px;">${r.date} • ${r.hprev} → ${r.harr}</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+  goScreen('s-justif-list');
+}
+
+function openJustifForm(id){
+  justifRecord=DB.retards.find(r=>r.id===id);
+  if(!justifRecord)return;
+  const isDepart=justifRecord.type==='depart';
+  const c=avc(selectedEmp.nom);
+  document.getElementById('justif-av').style.cssText=`background:${c}33;color:${c};width:48px;height:48px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:16px;`;
+  document.getElementById('justif-av').textContent=ini(selectedEmp.nom);
+  document.getElementById('justif-record-title').textContent=(isDepart?'Départ anticipé':'Retard')+' du '+justifRecord.date;
+  document.getElementById('justif-record-sub').textContent=justifRecord.hprev+' → '+justifRecord.harr+' • '+fmt(justifRecord.totalMn);
+  document.getElementById('justif-motif').value=justifRecord.motif||'';
+  goScreen('s-justif-form');
+}
+
+function submitJustif(){
+  const motif=(document.getElementById('justif-motif').value||'').trim();
+  if(!motif){toast('⚠️ Veuillez saisir un motif','ko');return;}
+  if(!justifRecord)return;
+  justifRecord.motif=motif;
+  justifRecord.justifie='Oui';
+  saveDB();
+  toast('✅ Justification envoyée','ok');
+  setTimeout(()=>{
+    justifRecord=null;
+    goJustifList();
+  },1000);
+}
+
+// ===== ADMIN LINK =====
+function goAdmin(){
+  // Ouvrir l'espace RH servi par le même serveur local
+  window.open('/rh.html','_blank');
+}
+
+// ===== INIT =====
+(async function init(){
+  await loadDB();
+})();
+</script>
+</body>
+</html>

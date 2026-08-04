@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>GestionPrésence</title>
+<style>
+  :root{--NAVY:#0a1f44;--NAVY2:#1a3a6e;--ORANGE:#f57c00;--ICE:#cadcfc;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  body{font-family:-apple-system,'Segoe UI',Roboto,Arial,sans-serif;background:linear-gradient(160deg,var(--NAVY) 0%,var(--NAVY2) 60%,#2d6bc4 100%);min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .wrap{max-width:640px;width:100%;text-align:center;}
+  .logo{width:64px;height:64px;border-radius:50%;background:var(--ORANGE);display:flex;align-items:center;justify-content:center;margin:0 auto 18px;font-size:30px;}
+  h1{color:#fff;font-size:26px;margin-bottom:6px;}
+  p.sub{color:var(--ICE);font-size:14px;margin-bottom:36px;}
+  .cards{display:flex;gap:16px;flex-wrap:wrap;justify-content:center;}
+  a.card{flex:1;min-width:230px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:16px;padding:28px 20px;text-decoration:none;color:#fff;transition:transform .15s, background .15s;}
+  a.card:hover{background:rgba(255,255,255,.14);transform:translateY(-2px);}
+  a.card .ico{font-size:34px;margin-bottom:10px;}
+  a.card .t{font-weight:700;font-size:16px;margin-bottom:4px;}
+  a.card .d{font-size:12.5px;color:var(--ICE);}
+  footer{margin-top:40px;color:rgba(255,255,255,.4);font-size:12px;}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="logo">🕒</div>
+    <h1>GestionPrésence</h1>
+    <p class="sub">Choisissez l'application à ouvrir sur cet appareil</p>
+    <div class="cards">
+      <a class="card" href="/pointage.html">
+        <div class="ico">📲</div>
+        <div class="t">Pointage</div>
+        <div class="d">À utiliser sur la tablette placée à l'entrée</div>
+      </a>
+      <a class="card" href="/rh.html">
+        <div class="ico">🗂️</div>
+        <div class="t">Espace RH</div>
+        <div class="d">Tableau de bord, retards, absences (code PIN requis)</div>
+      </a>
+    </div>
+    <footer>Connecté au serveur local — les données sont partagées en temps réel entre tous les appareils</footer>
+  </div>
+</body>
+</html>
